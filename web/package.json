@@ -1,0 +1,17 @@
+{
+  "name": "document-analysis-web",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"vite\" \"python -m flask --app ..\\api.py run --debug --host 127.0.0.1 --port 5000\"",
+    "dev:web": "vite",
+    "dev:api": "python -m flask --app ..\\api.py run --debug --host 127.0.0.1 --port 5000",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "vite": "^7.1.3"
+  }
+}
