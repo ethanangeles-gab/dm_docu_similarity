@@ -346,22 +346,28 @@ body {
   margin-bottom: 50px;
 }
 
-.hero-image-wrap {
-  width: 10px;
-  height: auto;
-  margin: 0 auto 10px;
-  filter: drop-shadow(0 12px 30px rgba(184, 134, 11, 0.15));
-  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+.hero-icon {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 12px;
+  background: var(--dark-panel);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: var(--gold);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.hero-image-wrap:hover {
-  transform: scale(1.05) translateY(-5px);
+.hero-icon:hover {
+  border-color: var(--gold);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.1);
 }
 
-.hero-img {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
+.hero-icon svg {
+  width: 22px;
+  height: 22px;
 }
 
 .hero h1 {

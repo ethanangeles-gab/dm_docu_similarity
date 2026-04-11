@@ -84,9 +84,7 @@ function renderApp() {
         <main class="page-shell">
           <!-- Hero -->
           <section class="hero" style="margin-top:10px;">
-            <div class="hero-image-wrap">
-              <img src="C:/Users/Ethan/.gemini/antigravity/brain/88031d23-0bb3-4559-8bd2-a3e8a07c0fc6/academic_hero_illustration_1775931543535.png" class="hero-img" alt="Academic Illustration">
-            </div>
+            <div class="hero-icon">${ICON.homework}</div>
             <h1>Student Writing<br>Insight &amp; Alignment</h1>
             <p class="hero-desc">Discover the unique voice of every document. Identify shared content signatures and receive clear, evidence-based feedback on writing style and originality.</p>
           </section>
