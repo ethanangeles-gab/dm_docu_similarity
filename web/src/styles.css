@@ -347,15 +347,15 @@ body {
 }
 
 .hero-icon {
-  width: 44px;
-  height: 44px;
-  margin: 0 auto 12px;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 16px;
   background: var(--dark-panel);
   border: 1.5px solid var(--border);
-  border-radius: 12px;
+  border-radius: 20px;
   display: grid;
   place-items: center;
-  color: var(--gold);
+  color: var(--dark);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -366,8 +366,8 @@ body {
 }
 
 .hero-icon svg {
-  width: 22px;
-  height: 22px;
+  width: 44px;
+  height: 44px;
 }
 
 .hero h1 {
