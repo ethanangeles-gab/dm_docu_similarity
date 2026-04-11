@@ -6,8 +6,12 @@ from collections import Counter
 import numpy as np
 
 
-def tokenize(text):
-    return re.findall(r"\b\w+\b", text.lower())
+def tokenize(text, remove_stopwords=False):
+    tokens = re.findall(r"\b\w+\b", text.lower())
+    if remove_stopwords:
+        stopwords = {"the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "with", "is", "are", "was", "were", "of"}
+        tokens = [t for t in tokens if t not in stopwords]
+    return tokens
 
 
 def build_vocabulary(tokenized_documents):
@@ -74,14 +78,21 @@ def top_contributing_terms(vocabulary, query_vector, document_vector, top_n=5):
     return [term for term, _ in contributions[:top_n]]
 
 
-def interpret_similarity(score):
-    if score >= 0.85:
+def interpret_similarity(score, sensitivity="standard"):
+    # Sensitivity adjusters
+    boost = 0.0
+    if sensitivity == "strict":
+        boost = 0.08
+    elif sensitivity == "relaxed":
+        boost = -0.10
+
+    if score + boost >= 0.85:
         return "very strong match"
-    if score >= 0.72:
+    if score + boost >= 0.72:
         return "strong match"
-    if score >= 0.58:
+    if score + boost >= 0.58:
         return "moderate match"
-    if score >= 0.40:
+    if score + boost >= 0.40:
         return "weak match"
     return "limited match"
 
@@ -90,13 +101,21 @@ def clamp(value, minimum, maximum):
     return max(minimum, min(maximum, value))
 
 
-def compute_paraphrase_score(tfidf_score, bow_score):
+def compute_paraphrase_score(tfidf_score, bow_score, sensitivity="standard"):
     if bow_score >= 0.95:
         return 0.0
-    if tfidf_score >= 0.65:
+
+    # Sensitivity adjustment for paraphrasing
+    thresh = 0.65
+    if sensitivity == "strict":
+        thresh = 0.55
+    elif sensitivity == "relaxed":
+        thresh = 0.75
+
+    if tfidf_score >= thresh:
         return float(clamp((1.0 - tfidf_score) * 35.0, 0.0, 18.0))
     if tfidf_score >= 0.20:
-        return float(60.0 + ((0.65 - tfidf_score) / 0.45) * 40.0)
+        return float(60.0 + ((thresh - tfidf_score) / (thresh - 0.20)) * 40.0)
     if tfidf_score >= 0.08:
         return float(25.0 + ((tfidf_score - 0.08) / 0.12) * 35.0)
     return 0.0
@@ -104,26 +123,26 @@ def compute_paraphrase_score(tfidf_score, bow_score):
 
 def interpret_paraphrase_score(tfidf_score, bow_score):
     if bow_score >= 0.95:
-        return "Likely exact copy"
+        return "Identical Content"
     if tfidf_score >= 0.65:
-        return "Most likely not paraphrased"
+        return "Unique Writing"
     if tfidf_score >= 0.20:
-        return "Likely paraphrased"
+        return "Shared Style/Paraphrased"
     if tfidf_score >= 0.08:
-        return "Weak similarity"
-    return "Not similar"
+        return "Weak Connection"
+    return "No Similarity"
 
 
 def describe_relationship(tfidf_score, bow_score):
     if bow_score >= 0.95:
-        return "The bag-of-words cosine similarity is extremely high, so this document is likely a direct copy or near-copy."
+        return "The direct wording overlap is extremely high, suggesting this is a near-identical copy."
     if tfidf_score >= 0.65:
-        return "The TF-IDF score is above 65%, so this document is most likely not paraphrased."
+        return "The unique content signature is strong, suggesting this writing is original."
     if tfidf_score >= 0.20:
-        return "The TF-IDF score is below 65% but still meaningful, so this document is likely paraphrased."
+        return "The content match is significant but the wording differs, suggesting it may be paraphrased."
     if tfidf_score >= 0.08:
-        return "There is only weak overlap, so this may be loosely related rather than a clear paraphrase."
-    return "The documents do not appear closely related in wording."
+        return "There is only a slight overlap in theme or vocabulary."
+    return "The documents do not appear to share any meaningful content."
 
 
 def explain_paraphrase(tfidf_score, bow_score, top_terms):
@@ -131,37 +150,37 @@ def explain_paraphrase(tfidf_score, bow_score, top_terms):
 
     if tfidf_score >= 0.65:
         evidence.append(
-            f"The TF-IDF cosine similarity is {tfidf_score:.4f}, which is above the 0.65 threshold for 'most likely not paraphrased'."
+            f"The content match signature is {tfidf_score:.4f}, which points toward independent writing."
         )
     elif tfidf_score >= 0.20:
         evidence.append(
-            f"The TF-IDF cosine similarity is {tfidf_score:.4f}, which is below the 0.65 threshold and supports a likely paraphrase judgment."
+            f"The content match signature is {tfidf_score:.4f}, which often indicates significant paraphrasing."
         )
     else:
         evidence.append(
-            f"The TF-IDF cosine similarity is {tfidf_score:.4f}, so the weighted overlap is weak."
+            f"The content match signature is only {tfidf_score:.4f}, showing very little shared substance."
         )
 
     if bow_score >= 0.95:
         evidence.append(
-            f"The bag-of-words cosine similarity is {bow_score:.4f}, which strongly suggests copy-paste or near-copy wording."
+            f"The direct wording overlap is {bow_score:.4f}, indicating near-perfect text copying."
         )
     elif bow_score >= 0.60:
         evidence.append(
-            f"The bag-of-words cosine similarity is {bow_score:.4f}, which shows the documents still share a lot of direct wording."
+            f"The direct wording overlap is {bow_score:.4f}, showing significant shared vocabulary and phrases."
         )
     else:
         evidence.append(
-            f"The bag-of-words cosine similarity is {bow_score:.4f}, which means the exact wording overlap is limited."
+            f"The direct wording overlap is {bow_score:.4f}, meaning the exact phrasing is mostly different."
         )
 
     if top_terms:
         evidence.append(
-            f"Shared weighted terms include {', '.join(top_terms)}, which shows the common language the model still found."
+            f"Shared key concepts include: {', '.join(top_terms)}."
         )
     else:
         evidence.append(
-            "There were no strong shared weighted terms, which often happens when a text is heavily reworded."
+            "There were no significant shared concepts detected."
         )
 
     return evidence
@@ -324,9 +343,9 @@ def compute_document_vector_metrics(tfidf_row, tf_row):
 
     return {
         "tfidf_score": round(tfidf_magnitude, 4),
-        "tfidf_score_level": "tf-idf vector magnitude",
+        "tfidf_score_level": "Vocabulary Depth",
         "bow_score": round(bow_magnitude, 4),
-        "bow_score_level": "bag-of-words vector magnitude",
+        "bow_score_level": "Lexical Variety",
     }
 
 
@@ -441,7 +460,7 @@ def generate_class_interpretation(batch_name, ranked_submissions):
     top_submission = ranked_submissions[0]
     return (
         f"Top class ranking for '{batch_name}' is '{top_submission['document_name']}' with a writing quality score "
-        f"of {top_submission['writing_quality_score']:.1f} and a TF-IDF uniqueness score of "
+        f"of {top_submission['writing_quality_score']:.1f} and a vocabulary distinctness score of "
         f"{top_submission['tfidf_uniqueness_score']:.1f}."
     )
 
@@ -550,7 +569,7 @@ def group_singletons_by_topic(singleton_indices, labels, vocabulary, tfidf_matri
     return groups
 
 
-def build_similarity_heat_map(documents, tf_matrix, tfidf_matrix):
+def build_similarity_heat_map(documents, tf_matrix, tfidf_matrix, sensitivity="standard"):
     labels = [document["name"] for document in documents]
     matrix_rows = []
     strongest_pair = None
@@ -581,7 +600,7 @@ def build_similarity_heat_map(documents, tf_matrix, tfidf_matrix):
                     "similarity_score": round(combined_similarity, 4),
                     "tfidf_cosine_similarity": round(tfidf_similarity, 4),
                     "bow_cosine_similarity": round(bow_similarity, 4),
-                    "similarity_level": interpret_similarity(combined_similarity),
+                    "similarity_level": interpret_similarity(combined_similarity, sensitivity=sensitivity),
                 }
             )
 
@@ -630,18 +649,22 @@ def get_submission_sort_key(item):
     return (item["ranking_score"], item["writing_quality_score"])
 
 
-def analyze_classroom_submissions(batch_name, documents):
+def analyze_classroom_submissions(batch_name, documents, settings=None):
     if not documents:
         raise ValueError("At least one student submission is required.")
 
-    tokenized_documents = [tokenize(document["text"]) for document in documents]
+    if settings is None: settings = {}
+    sensitivity = settings.get("sensitivity", "standard")
+    remove_stopwords = settings.get("remove_stopwords", False)
+
+    tokenized_documents = [tokenize(document["text"], remove_stopwords=remove_stopwords) for document in documents]
     vocabulary = build_vocabulary(tokenized_documents)
     tf_matrix = compute_tf(tokenized_documents, vocabulary)
     df_vector = compute_df(tokenized_documents, vocabulary)
     idf_vector = compute_idf(df_vector, len(documents))
     tfidf_matrix = compute_tfidf(tf_matrix, idf_vector)
     influence_findings = build_influence_findings(documents, vocabulary, tf_matrix, tfidf_matrix, idf_vector)
-    similarity_heat_map = build_similarity_heat_map(documents, tf_matrix, tfidf_matrix)
+    similarity_heat_map = build_similarity_heat_map(documents, tf_matrix, tfidf_matrix, sensitivity=sensitivity)
 
     ranked_submissions = []
 
@@ -684,9 +707,13 @@ def get_document_sort_key(item):
     return item["ranking_score"]
 
 
-def analyze_documents(query_text, query_name, documents):
+def analyze_documents(query_text, query_name, documents, settings=None):
+    if settings is None: settings = {}
+    sensitivity = settings.get("sensitivity", "standard")
+    remove_stopwords = settings.get("remove_stopwords", False)
+
     combined_documents = [{"name": query_name, "text": query_text}] + list(documents)
-    tokenized_documents = [tokenize(document["text"]) for document in combined_documents]
+    tokenized_documents = [tokenize(document["text"], remove_stopwords=remove_stopwords) for document in combined_documents]
     vocabulary = build_vocabulary(tokenized_documents)
     tf_matrix = compute_tf(tokenized_documents, vocabulary)
     df_vector = compute_df(tokenized_documents, vocabulary)
@@ -705,7 +732,7 @@ def analyze_documents(query_text, query_name, documents):
         ranking_score = float((tfidf_similarity * 0.7) + (bow_similarity * 0.3))
         influence_score = round(ranking_score * 100.0, 2)
         top_terms = top_contributing_terms(vocabulary, query_vector, document_vector)
-        paraphrase_score = compute_paraphrase_score(tfidf_similarity, bow_similarity)
+        paraphrase_score = compute_paraphrase_score(tfidf_similarity, bow_similarity, sensitivity=sensitivity)
 
         shared_words = find_shared_words(query_text, document["text"], vocabulary=vocabulary, idf_vector=idf_vector)
 
@@ -715,9 +742,9 @@ def analyze_documents(query_text, query_name, documents):
                 "document_summary": summarize_text(document["text"]),
                 "ranking_score": ranking_score,
                 "tfidf_cosine_similarity": tfidf_similarity,
-                "tfidf_relevance_level": interpret_similarity(tfidf_similarity),
+                "tfidf_relevance_level": interpret_similarity(tfidf_similarity, sensitivity=sensitivity),
                 "bow_cosine_similarity": bow_similarity,
-                "bow_relevance_level": interpret_similarity(bow_similarity),
+                "bow_relevance_level": interpret_similarity(bow_similarity, sensitivity=sensitivity),
                 "influence_score": influence_score,
                 "paraphrase_score": paraphrase_score,
                 "paraphrase_label": interpret_paraphrase_score(tfidf_similarity, bow_similarity),

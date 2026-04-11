@@ -22,6 +22,9 @@ const ICON = {
   grammar: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`,
   detect: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35M11 8v6M8 11h6"/></svg>`,
   similarity: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="8" height="18" rx="2"/><rect x="14" y="3" width="8" height="18" rx="2"/></svg>`,
+  home: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+  pokeball: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M2.5 12h19"/><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>`,
+  settings: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>`,
 };
 
 /* ── Render ─────────────────────────────────────────────────────── */
@@ -35,9 +38,9 @@ function renderApp() {
       <aside class="sidebar">
         <div class="sidebar-logo">${ICON.logo}</div>
         <nav class="sidebar-nav">
-          <button class="sidebar-item active" id="sb-upload" onclick="switchSidebarMode('upload')" title="Upload Documents">
-            ${ICON.file}
-            <span>Files</span>
+          <button class="sidebar-item active" id="sb-home" onclick="switchSidebarMode('home')" title="Home">
+            ${ICON.home}
+            <span>Home</span>
           </button>
           <button class="sidebar-item" id="sb-type" onclick="switchSidebarMode('type')" title="Type Text">
             ${ICON.plus}
@@ -48,7 +51,13 @@ function renderApp() {
             <span>Batch</span>
           </button>
         </nav>
-        <div class="sidebar-avatar" style="margin-top:auto;cursor:pointer;color:var(--muted);">${ICON.user}</div>
+        <div class="sidebar-bottom">
+          <button class="sidebar-item" id="sb-settings" onclick="switchSidebarMode('settings')" title="Settings">
+            ${ICON.settings}
+            <span>Settings</span>
+          </button>
+          <div class="sidebar-avatar" style="cursor:pointer;color:var(--muted);">${ICON.user}</div>
+        </div>
       </aside>
 
       <div class="app-shell">
@@ -60,9 +69,13 @@ function renderApp() {
               <div class="top-title">DocuCheck</div>
               <div class="top-subtitle">
                 <span>A Machine Learning Project Foundation</span>
-                <span class="sep">•</span>
-                <span>Made by PokeTech Marketing</span>
               </div>
+            </div>
+          </div>
+          <div class="top-right" id="poketech-header">
+            <div class="poketech-brand">
+              <span>PokeTech Marketing</span>
+              <div class="poketech-logo">${ICON.pokeball}</div>
             </div>
           </div>
         </header>
@@ -70,19 +83,111 @@ function renderApp() {
         <main class="page-shell">
           <!-- Hero -->
           <section class="hero" style="margin-top:10px;">
-            <h1>Classmate Work<br>Comparison &amp; Feedback</h1>
-            <p class="hero-desc">Compare one original classwork submission against one or more classmate submissions, review similarity patterns, and generate helpful feedback using TF-IDF and bag-of-words cosine similarity.</p>
+            <h1>Student Writing<br>Insight &amp; Alignment</h1>
+            <p class="hero-desc">Discover the unique voice of every document. Identify shared content signatures and receive clear, evidence-based feedback on writing style and originality.</p>
+          </section>
+
+          <!-- Homepage panel -->
+          <section class="panel" id="panel-home">
+             <div class="panel-title">Welcome to DocuCheck</div>
+             <p class="panel-sub">Choose an analysis method to get started. All comparisons use our advanced lexical matching foundation.</p>
+             
+             <div class="home-grid">
+               <div class="home-card" onclick="switchSidebarMode('type')">
+                 <div class="home-card-icon">${ICON.plus}</div>
+                 <div class="home-card-content">
+                   <h3>Direct Text Analysis</h3>
+                   <p>Paste or type your content directly to compare two pieces of writing instantly.</p>
+                 </div>
+               </div>
+               <div class="home-card" onclick="switchSidebarMode('professor')">
+                 <div class="home-card-icon">${ICON.similarity}</div>
+                 <div class="home-card-content">
+                   <h3>Document Batch Analysis</h3>
+                   <p>Upload a set of student submissions to rank them by originality and detect shared styles.</p>
+                 </div>
+               </div>
+             </div>
+
+             <div class="about-section">
+               <div class="about-header">
+                 <div class="about-badge">System Insights</div>
+                 <h2>Understanding the Foundation</h2>
+                 <p>DocuCheck is more than a simple text matcher. It uses statistical linguistic models to find patterns that the human eye might miss.</p>
+               </div>
+
+               <div class="insight-grid">
+                 <div class="insight-card">
+                   <h4>${ICON.detect} System Purpose</h4>
+                   <p>Created to provide educators and students with a <strong>transparent</strong> tool for academic integrity. We focus on evidence, not just opaque scores.</p>
+                 </div>
+                 <div class="insight-card">
+                   <h4>${ICON.user} Primary Use Case</h4>
+                   <p>Optimized for <strong>Classroom Labs</strong> where multiple students submit work on similar topics. It identifies stylistic clusters and shared wording paths.</p>
+                 </div>
+                 <div class="insight-card">
+                   <h4>${ICON.similarity} The Logic Model</h4>
+                   <p>We use a hybrid of <strong>Signature Matching</strong> and <strong>Wording Alignment</strong>. This ensures we catch both direct copies and clever paraphrasing.</p>
+                 </div>
+                 <div class="insight-card">
+                   <h4>${ICON.grammar} Why This Method?</h4>
+                   <p>Transparency. Modern "Black-box" AI models can't explain their scores. Our method <strong>highlights exactly which words</strong> triggered the match.</p>
+                 </div>
+               </div>
+
+               <div class="info-group">
+                 <div class="info-col">
+                   <h3>How It Works</h3>
+                   <div class="step-list">
+                     <div class="step-item">
+                       <span class="step-num">1</span>
+                       <div><strong>Tokenization:</strong> Every document is broken down into its core vocabulary components.</div>
+                     </div>
+                     <div class="step-item">
+                       <span class="step-num">2</span>
+                       <div><strong>Significance Weighting:</strong> Rare, technical words are given higher "value" than common filler words.</div>
+                     </div>
+                     <div class="step-item">
+                       <span class="step-num">3</span>
+                       <div><strong>Vectorization:</strong> Each document is projected into a mathematical space representing its content style.</div>
+                     </div>
+                     <div class="step-item">
+                       <span class="step-num">4</span>
+                       <div><strong>Match Calculation:</strong> We measure the "angular similarity" between these vectors to find hidden connections.</div>
+                     </div>
+                   </div>
+                 </div>
+                 <div class="info-col">
+                   <h3>Interpreting Results</h3>
+                   <p>Our intelligence isn't just in the score, but in the <strong>Contextual Awareness</strong> of the vocabulary used.</p>
+                   <div class="key-grid">
+                     <div class="key-item lo">
+                       <strong>0–20% Match</strong>
+                       <span>Weak connection. Likely independent work.</span>
+                     </div>
+                     <div class="key-item mid">
+                       <strong>21–59% Match</strong>
+                       <span>Shared Style. Possible paraphrasing or heavy conceptual overlap.</span>
+                     </div>
+                     <div class="key-item hi">
+                       <strong>60–90%+ Match</strong>
+                       <span>Strong Match. High probability of shared wording or direct content sourcing.</span>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+             </div>
           </section>
 
           <!-- Input panel -->
-          <section class="panel" id="input-panel">
+          <section class="panel hidden" id="input-panel">
             <div class="panel-title" id="panel-title">Input Options</div>
-            <p class="panel-sub" id="panel-desc">Select a mode from the sidebar to upload files, type text, or run a professor batch analysis.</p>
+            <p class="panel-sub" id="panel-desc">Select a mode from the sidebar to begin.</p>
 
             <form id="main-form" autocomplete="off">
 
-              <!-- Upload panel -->
-              <div id="panel-upload" class="form-grid">
+              <!-- Upload panel (Hidden in new UI flow but kept for logic) -->
+              <div id="panel-upload" class="form-grid hidden">
                 <div class="field-group">
                   <label class="field-label" for="query-file">Original Document</label>
                   <div class="file-row">
@@ -139,6 +244,51 @@ function renderApp() {
                 </div>
               </div>
 
+              <!-- Settings panel -->
+              <div id="panel-settings" class="hidden">
+                 <div class="settings-grid">
+                    <div class="setting-item">
+                      <div class="setting-info">
+                        <div class="setting-label">Analysis Sensitivity</div>
+                        <div class="setting-desc">Adjust how strictly the system flags content matches.</div>
+                      </div>
+                      <div class="setting-control">
+                        <select id="set-sensitivity" class="field-input" style="width: 140px;">
+                          <option value="relaxed">Relaxed</option>
+                          <option value="standard" selected>Standard</option>
+                          <option value="strict">Strict</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="setting-item">
+                      <div class="setting-info">
+                        <div class="setting-label">Ignore Common Words</div>
+                        <div class="setting-desc">Filter out "the", "and", "is", etc. to focus on substance.</div>
+                      </div>
+                      <div class="setting-control">
+                        <label class="toggle-switch">
+                          <input type="checkbox" id="set-stopwords">
+                          <span class="slider round"></span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="setting-item">
+                      <div class="setting-info">
+                        <div class="setting-label">Branding Mode</div>
+                        <div class="setting-desc">Switch between DocuCheck Classic and PokeTech Marketing vibes.</div>
+                      </div>
+                      <div class="setting-control">
+                        <label class="toggle-switch">
+                          <input type="checkbox" id="set-branding" checked>
+                          <span class="slider round"></span>
+                        </label>
+                      </div>
+                    </div>
+                 </div>
+              </div>
+
               <!-- Action row -->
               <div class="action-row">
                 <button id="submit-btn" class="btn-primary" type="submit">
@@ -158,10 +308,10 @@ function renderApp() {
 
               <div class="prof-tabs" role="tablist">
                 <button class="ptab active" data-ptab="overview">Overview</button>
-                <button class="ptab" data-ptab="ranking">Class Ranking</button>
-                <button class="ptab" data-ptab="similarity">Similarity Count</button>
-                <button class="ptab" data-ptab="heatmap">Heat Map</button>
-                <button class="ptab" data-ptab="influence">Influence Detection</button>
+                <button class="ptab" data-ptab="ranking">Ranking</button>
+                <button class="ptab" data-ptab="similarity">Similarity Map</button>
+                <button class="ptab" data-ptab="heatmap">Network Grid</button>
+                <button class="ptab" data-ptab="influence">Match Detection</button>
               </div>
 
               <!-- Overview -->
@@ -175,8 +325,8 @@ function renderApp() {
               <table>
                 <thead><tr>
                   <th>#</th><th>Document</th><th>Writing Quality</th>
-                  <th>TF-IDF Uniqueness</th><th>TF-IDF Score</th>
-                  <th>BOW Score</th><th>Word Count</th><th>Feedback</th>
+                  <th>Vocabulary Signature</th><th>Signature Score</th>
+                  <th>Overlap Score</th><th>Word Count</th><th>Feedback</th>
                 </tr></thead>
                 <tbody id="ranking-body"></tbody>
               </table>
@@ -190,8 +340,8 @@ function renderApp() {
                 <span class="filter-lbl">Filter</span>
                 <select class="filter-sel" id="sim-filter">
                   <option value="all">All</option>
-                  <option value="tfidf">Only TF-IDF</option>
-                  <option value="bow">Only BOW</option>
+                  <option value="tfidf">Only Signature</option>
+                  <option value="bow">Only Overlap</option>
                 </select>
               </div>
               <div class="filter-group">
@@ -232,7 +382,7 @@ function renderApp() {
               <table>
                 <thead><tr>
                   <th>#</th><th>Doc A</th><th>Doc B</th><th>Flag</th><th>Decision</th>
-                  <th>Score</th><th>TF-IDF</th><th>BOW</th><th>Explanation</th>
+                  <th>Score</th><th>Signature</th><th>Overlap</th><th>Explanation</th>
                 </tr></thead>
                 <tbody id="inf-body"></tbody>
               </table>
@@ -268,13 +418,13 @@ function renderApp() {
 
         <!-- Gauge -->
         <section class="panel" id="gauge-panel">
-          <div class="panel-title" style="margin-bottom:22px;">Copycat Gauge</div>
+          <div class="panel-title" style="margin-bottom:22px;">Similarity Gauge</div>
           <div id="gauge-content"></div>
         </section>
 
         <!-- Explanation -->
         <section class="panel">
-          <div class="panel-title">Why It Looks Like a Paraphrase</div>
+          <div class="panel-title">Why It Looks Like a Match</div>
           <p class="panel-sub">Evidence from the selected document pair.</p>
           <div class="explain-grid" id="explain-content"></div>
         </section>
@@ -290,14 +440,14 @@ function renderApp() {
           <div class="hl-top">
             <div>
               <div class="panel-title">Word Highlighter</div>
-              <p class="panel-sub" style="margin-bottom:0;">Every shared word colored by TF-IDF significance.</p>
+              <p class="panel-sub" style="margin-bottom:0;">Every shared word colored by vocabulary significance.</p>
             </div>
             <span class="word-badge" id="word-badge">0 words shared</span>
           </div>
           <div class="hl-legend">
-            <div class="hl-li"><span class="hl-sw" style="background:rgba(99,102,241,0.18);border:1.5px solid rgba(99,102,241,0.5);"></span>Low significance</div>
-            <div class="hl-li"><span class="hl-sw" style="background:rgba(234,88,12,0.18);border:1.5px solid rgba(234,88,12,0.55);"></span>Medium significance</div>
-            <div class="hl-li"><span class="hl-sw" style="background:rgba(220,38,38,0.16);border:1.5px solid rgba(220,38,38,0.55);"></span>High significance</div>
+            <div class="hl-li"><span class="hl-sw" style="background:rgba(212,175,55,0.18);border:1.5px solid rgba(212,175,55,0.5);"></span>Low significance</div>
+            <div class="hl-li"><span class="hl-sw" style="background:rgba(184,134,11,0.18);border:1.5px solid rgba(184,134,11,0.55);"></span>Medium significance</div>
+            <div class="hl-li"><span class="hl-sw" style="background:rgba(199,150,0,0.16);border:1.5px solid rgba(199,150,0,0.55);"></span>High significance</div>
           </div>
           <div class="hl-cols">
             <div>
@@ -309,10 +459,27 @@ function renderApp() {
               <div class="hl-box" id="hl-b"></div>
             </div>
           </div>
-        </section>
+        </main>
 
-      </div><!-- /results-section -->
-    </main>
+        <!-- Footer -->
+        <footer class="app-footer">
+          <div class="footer-content">
+            <div class="footer-brand">
+              <div class="footer-logo">${ICON.logo}</div>
+              <div class="footer-title">DocuCheck</div>
+            </div>
+            <div class="footer-meta">
+              <p>© 2026 DocuCheck • A Machine Learning Project Foundation</p>
+              <nav class="footer-links">
+                <a href="#">Terms</a>
+                <a href="#">Privacy</a>
+                <a href="#">PokeTech Marketing</a>
+              </nav>
+            </div>
+          </div>
+        </footer>
+      </div><!-- /app-shell -->
+    </div>
   `;
 
   wireEvents();
@@ -322,7 +489,7 @@ function renderApp() {
 /* ── Sidebar Logic ─────────────────────────────────────────────── */
 
 window.switchSidebarMode = function (mode) {
-  if (mode === 'upload' || mode === 'type' || mode === 'professor') {
+  if (mode === 'home' || mode === 'type' || mode === 'professor' || mode === 'settings') {
     setMode(mode);
   }
 
@@ -373,26 +540,30 @@ function setMode(mode) {
   const title = document.getElementById('panel-title');
   const desc = document.getElementById('panel-desc');
 
-  if (mode === 'upload') {
-    title.textContent = 'Document Comparison';
-    desc.textContent = 'Upload an original file and one or more test files to find similarity patterns.';
-  } else if (mode === 'type') {
+  document.getElementById('panel-home').classList.toggle('hidden', mode !== 'home');
+  document.getElementById('input-panel').classList.toggle('hidden', mode === 'home');
+
+  if (mode === 'type') {
     title.textContent = 'Direct Text Analysis';
     desc.textContent = 'Paste or type text directly into the fields below to compare documents without uploading.';
   } else if (mode === 'professor') {
-    title.textContent = 'Professor Batch Analysis';
+    title.textContent = 'Batch Analysis';
     desc.textContent = 'Analyze an entire set of student submissions at once to generate a class-wide similarity ranking.';
+  } else if (mode === 'settings') {
+    title.textContent = 'Application Settings';
+    desc.textContent = 'Customize how the analysis is performed and how the interface looks.';
   }
 
-  document.getElementById('panel-upload').classList.toggle('hidden', mode !== 'upload');
+  document.getElementById('panel-upload').classList.add('hidden'); // Always hidden now
   document.getElementById('panel-type').classList.toggle('hidden', mode !== 'type');
   document.getElementById('panel-professor').classList.toggle('hidden', mode !== 'professor');
-  document.getElementById('submit-btn').classList.toggle('hidden', mode === 'professor');
+  document.getElementById('panel-settings').classList.toggle('hidden', mode !== 'settings');
+  document.getElementById('submit-btn').classList.toggle('hidden', mode === 'professor' || mode === 'settings');
   document.getElementById('prof-submit-btn').classList.toggle('hidden', mode !== 'professor');
 
   /* Exclusivity for outputs */
-  document.getElementById('results-section').classList.toggle('hidden', mode === 'professor');
-  document.getElementById('prof-results').classList.toggle('hidden', mode !== 'professor');
+  document.getElementById('results-section').classList.toggle('hidden', true);
+  document.getElementById('prof-results').classList.toggle('hidden', true);
 }
 
 function switchProfTab(tab) {
@@ -402,6 +573,57 @@ function switchProfTab(tab) {
   if (panel) panel.classList.add('active');
 }
 
+/* ── Settings Logic ─────────────────────────────────────────────── */
+function getSettings() {
+  const defaults = {
+    sensitivity: 'standard',
+    remove_stopwords: false,
+    branding: true
+  };
+  try {
+    const saved = localStorage.getItem('docucheck_settings');
+    return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
+  } catch {
+    return defaults;
+  }
+}
+
+function saveSettings() {
+  const settings = {
+    sensitivity: document.getElementById('set-sensitivity').value,
+    remove_stopwords: document.getElementById('set-stopwords').checked,
+    branding: document.getElementById('set-branding').checked
+  };
+  localStorage.setItem('docucheck_settings', JSON.stringify(settings));
+  applySettings(settings);
+}
+
+function applySettings(settings) {
+  // Sync UI elements
+  const sen = document.getElementById('set-sensitivity');
+  const sw = document.getElementById('set-stopwords');
+  const br = document.getElementById('set-branding');
+  
+  if (sen) sen.value = settings.sensitivity;
+  if (sw) sw.checked = settings.remove_stopwords;
+  if (br) br.checked = settings.branding;
+
+  // Apply visual changes
+  const poketech = document.getElementById('poketech-header');
+  if (poketech) {
+    poketech.classList.toggle('branding-hidden', !settings.branding);
+  }
+}
+
+function initSettings() {
+  const settings = getSettings();
+  applySettings(settings);
+
+  document.getElementById('set-sensitivity').addEventListener('change', saveSettings);
+  document.getElementById('set-stopwords').addEventListener('change', saveSettings);
+  document.getElementById('set-branding').addEventListener('change', saveSettings);
+}
+
 /* ── Form submit ────────────────────────────────────────────────── */
 async function handleSubmit(e) {
   e.preventDefault();
@@ -409,6 +631,9 @@ async function handleSubmit(e) {
   const btn = inputMode === 'professor' ? document.getElementById('prof-submit-btn') : document.getElementById('submit-btn');
 
   const fd = new FormData();
+  
+  // Attach settings
+  fd.append('settings', JSON.stringify(getSettings()));
 
   if (inputMode === 'professor') {
     const files = Array.from(document.getElementById('batch-documents').files);
@@ -512,8 +737,8 @@ function renderResults(data) {
       </div>
       <div class="cc-chips">
         <span class="cc-chip hi">${Math.round(item.influence_score || 0)}%</span>
-        <span class="cc-chip">TF-IDF ${pct3(item.tfidf_cosine_similarity)}</span>
-        <span class="cc-chip">BOW ${pct3(item.bow_cosine_similarity)}</span>
+        <span class="cc-chip">Signature ${pct3(item.tfidf_cosine_similarity)}</span>
+        <span class="cc-chip">Overlap ${pct3(item.bow_cosine_similarity)}</span>
         <span class="cc-chip">${esc(item.paraphrase_label || '')}</span>
       </div>
     </article>
@@ -564,7 +789,7 @@ function renderDetail(item) {
   `;
 
   document.getElementById('reco-content').textContent =
-    `${item.document_name || 'This document'} scores ${Math.round(score)}% on the copycat gauge — ${item.paraphrase_label || ''}. ${item.relationship_summary || ''}`;
+    `${item.document_name || 'This document'} scores ${Math.round(score)}% on the similarity gauge — ${item.paraphrase_label || ''}. ${item.relationship_summary || ''}`;
 }
 
 function renderHighlighter(queryText, queryName, item) {
@@ -659,7 +884,7 @@ function renderSimCount(mapData) {
         <details class="simd">
           <summary>View matches</summary>
           <ul class="sml">
-            ${matches.map(m => `<li>${esc(m.name)}<span>TF-IDF: ${pct3(m.tf)} · BOW: ${pct3(m.bow)}</span></li>`).join('')}
+            ${matches.map(m => `<li>${esc(m.name)}<span>Signature: ${pct3(m.tf)} · Overlap: ${pct3(m.bow)}</span></li>`).join('')}
           </ul>
         </details>` : ''}
     </div>
@@ -733,7 +958,13 @@ function esc(t) { return String(t).replaceAll('&', '&amp;').replaceAll('<', '&lt
 
 /* ── Boot ───────────────────────────────────────────────────────── */
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', renderApp, { once: true });
+  document.addEventListener('DOMContentLoaded', () => {
+    renderApp();
+    initSettings();
+    setMode('home');
+  }, { once: true });
 } else {
   renderApp();
+  initSettings();
+  setMode('home');
 }

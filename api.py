@@ -1,6 +1,7 @@
 import io
 import os
 
+import json
 from flask import Flask, jsonify, request
 
 try:
@@ -132,7 +133,15 @@ def analyze():
         query_name = query_name_input
         documents = [{"name": test_name_input, "text": test_text_input}]
 
-    result = analyze_documents(query_text, query_name, documents)
+    settings = {}
+    settings_raw = request.form.get("settings")
+    if settings_raw:
+        try:
+            settings = json.loads(settings_raw)
+        except:
+            pass
+
+    result = analyze_documents(query_text, query_name, documents, settings=settings)
     return jsonify(
         {
             "query_name": result["query_name"],
@@ -172,7 +181,15 @@ def professor_ranking():
     if not documents:
         return jsonify({"error": "At least one student submission .txt, .pdf, or .docx file is required."}), 400
 
-    result = analyze_classroom_submissions(batch_name, documents)
+    settings = {}
+    settings_raw = request.form.get("settings")
+    if settings_raw:
+        try:
+            settings = json.loads(settings_raw)
+        except:
+            pass
+
+    result = analyze_classroom_submissions(batch_name, documents, settings=settings)
     return jsonify(
         {
             "batch_name": result["batch_name"],
