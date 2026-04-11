@@ -36,7 +36,9 @@ def compute_df(tokenized_documents, vocabulary):
 
 
 def compute_idf(df_vector, document_count):
-    return np.array([math.log(document_count / df) if df != 0 else 0 for df in df_vector], dtype=float)
+    # Smoothed IDF: log((1 + N) / (1 + df)) + 1.0
+    # Ensures shared words still have value and rare words weigh more.
+    return np.array([math.log((1 + document_count) / (1 + df)) + 1.0 for df in df_vector], dtype=float)
 
 
 def compute_tfidf(tf_matrix, idf_vector):
@@ -169,20 +171,10 @@ def find_shared_words(text_a, text_b, vocabulary=None, idf_vector=None):
     """
     Find all shared words between two texts and return per-word character spans
     with TF-IDF-based significance tiers for frontend highlighting.
-
-    Tiers (based on IDF percentile within the shared word set):
-      'high'   - top-third IDF: rare, distinctive terms
-      'medium' - middle-third IDF
-      'low'    - bottom-third IDF: common words that still appear in both texts
+    Preserves original formatting by building spans on raw text.
     """
-
-    def normalize(text):
-        return re.sub(r"\s+", " ", text.lower()).strip()
-
-    norm_a = normalize(text_a)
-    norm_b = normalize(text_b)
-    words_a = set(re.findall(r"\b\w+\b", norm_a))
-    words_b = set(re.findall(r"\b\w+\b", norm_b))
+    words_a = set(tokenize(text_a))
+    words_b = set(tokenize(text_b))
     shared_words = words_a & words_b
 
     word_idf = {}
@@ -198,26 +190,25 @@ def find_shared_words(text_a, text_b, vocabulary=None, idf_vector=None):
     if shared_words:
         idf_values = sorted(word_idf[w] for w in shared_words)
         n = len(idf_values)
-        low_cut = idf_values[n // 3]
-        high_cut = idf_values[(2 * n) // 3]
+        low_cut = idf_values[n // 3] if n > 0 else 1.0
+        high_cut = idf_values[(2 * n) // 3] if n > 0 else 1.0
     else:
         low_cut = high_cut = 1.0
 
     def get_tier(word):
         v = word_idf.get(word, 1.0)
-        if v >= high_cut:
-            return "high"
-        if v >= low_cut:
-            return "medium"
+        if v >= high_cut: return "high"
+        if v >= low_cut: return "medium"
         return "low"
 
     word_tiers = {word: get_tier(word) for word in shared_words}
 
-    def build_spans(norm_text, words):
+    def build_spans(raw_text):
         spans = []
-        for match in re.finditer(r"\b\w+\b", norm_text):
-            token = match.group(0)
-            if token in words:
+        # Case-insensitive find for shared tokens in raw text
+        for match in re.finditer(r"\b\w+\b", raw_text):
+            token = match.group(0).lower()
+            if token in shared_words:
                 spans.append({
                     "start": match.start(),
                     "end": match.end(),
@@ -226,17 +217,14 @@ def find_shared_words(text_a, text_b, vocabulary=None, idf_vector=None):
                 })
         return spans
 
-    spans_a = build_spans(norm_a, shared_words)
-    spans_b = build_spans(norm_b, shared_words)
-
     return {
-        "shared_words": sorted(shared_words),
+        "shared_words": sorted(list(shared_words)),
         "word_count": len(shared_words),
         "word_tiers": word_tiers,
-        "spans_a": spans_a,
-        "spans_b": spans_b,
-        "normalized_text_a": norm_a,
-        "normalized_text_b": norm_b,
+        "spans_a": build_spans(text_a),
+        "spans_b": build_spans(text_b),
+        "raw_text_a": text_a,
+        "raw_text_b": text_b,
     }
 
 def summarize_text(text, max_words=28):
